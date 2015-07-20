@@ -76,6 +76,7 @@ Requires:       python-crypto
 Requires:       python-dateutil
 Requires:       python-python-magic
 Requires:       python-simplejson
+Requires:       nginx
 
 # EPEL 6
 Requires:       m2crypto
@@ -174,11 +175,24 @@ getent passwd eucaconsole >/dev/null || \
 %post
 /sbin/chkconfig --add eucaconsole
 
+if [ $1 -eq 1 ] ; then
+    if [ -f /etc/nginx/nginx.conf ] ; then
+	cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.orig
+	cp /usr/share/doc/%{name}-%{version}/nginx.conf /etc/nginx/nginx.conf
+	sed -i 's/#\ listen\ 443\ ssl;/listen\ 443\ ssl;/g' /etc/nginx/nginx.conf
+	sed -i 's/#\ ssl_certificate\ \/path\/to\/ssl\/pem_file;/ssl_certificate\ \/etc\/eucaconsole\/console.crt;/g' /etc/nginx/nginx.conf
+	sed -i 's/#\ ssl_certificate_key\ \/path\/to\/ssl\/certificate_key;/ssl_certificate_key\ \/etc\/eucaconsole\/console.key;/g' /etc/nginx/nginx.conf
+	sed -i 's/session.secure\ =\ false/session.secure\ =\ true/g' /etc/eucaconsole/console.ini
+	/sbin/chkconfig --add nginx
+    fi 
+fi
 
 %preun
 if [ $1 -eq 0 ] ; then
     /sbin/service eucaconsole stop >/dev/null 2>&1
     /sbin/chkconfig --del eucaconsole
+    /sbin/service nginx stop >/dev/null 2>&1
+    /sbin/chkconfig --del nginx
 fi
 
 

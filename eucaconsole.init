@@ -57,6 +57,17 @@ start() {
         generate_cookie_secrets
     fi    
 
+    if [ -f /etc/eucaconsole/console.crt ]; then
+        GREPCRT=$(grep -q 'ssl_certificate /etc/eucaconsole/console.crt' /etc/nginx/nginx.conf)
+        if [ "${GREPCRT:-0}" == 0 ]; then
+            service nginx start
+        else
+	    echo "Warning: nginx.conf contains incorrect ssl_certificate entry; cannot start nginx webserver..."
+        fi
+    else
+	echo "Warning: /etc/eucaconsole/console.crt not found; cannot start nginx webserver..."
+    fi
+
     echo -n $"Starting $SERVICE: "
     daemon --user=$CONSOLEUSER --pidfile=$PIDFILE $PROCESS -d -p $PIDFILE
     RETVAL=$?
