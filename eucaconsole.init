@@ -37,9 +37,6 @@
 # Description:       Eucalyptus Console Server
 ### END INIT INFO
 
-# DEBUG MBACCHI REMOVE ME!!!!!!!
-#set -x
-
 . /etc/rc.d/init.d/functions
 
 [ -f /etc/sysconfig/eucaconsole ] && . /etc/sysconfig/eucaconsole
@@ -64,7 +61,7 @@ start() {
         GREPCRT=$(grep -q 'ssl_certificate /etc/eucaconsole/console.crt' /etc/eucaconsole/nginx.conf)
         if [ "${GREPCRT:-0}" == 0 ]; then
             [ -f /etc/sysconfig/eucaconsole-nginx ] && . /etc/sysconfig/eucaconsole-nginx
-            /usr/bin/nohup $NGINX_CMD &
+            $NGINX_CMD &
         else
 	    echo "Warning: nginx.conf contains incorrect ssl_certificate entry; cannot start nginx webserver..."
         fi
