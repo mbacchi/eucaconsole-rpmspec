@@ -1,18 +1,3 @@
-%global build_id 0.23.99
-%global tarball_basedir eucaconsole-4.1.1-1656-g654b391
-
-%global build_id 0.23.99
-%global tarball_basedir eucaconsole-4.1.1-1656-g654b391
-
-%global build_id 0.23.99
-%global tarball_basedir eucaconsole-4.1.1-1656-g654b391
-
-%global build_id 0.23.99
-%global tarball_basedir eucaconsole-4.1.1-1656-g654b391
-
-%global build_id 0.23.99
-%global tarball_basedir eucaconsole-4.1.1-1656-g654b391
-
 # Copyright 2012-2015 Eucalyptus Systems, Inc.
 #
 # Redistribution and use of this software in source and binary forms, with or
