@@ -1,3 +1,18 @@
+%global build_id 0.23.99
+%global tarball_basedir eucaconsole-4.1.1-1656-g654b391
+
+%global build_id 0.23.99
+%global tarball_basedir eucaconsole-4.1.1-1656-g654b391
+
+%global build_id 0.23.99
+%global tarball_basedir eucaconsole-4.1.1-1656-g654b391
+
+%global build_id 0.23.99
+%global tarball_basedir eucaconsole-4.1.1-1656-g654b391
+
+%global build_id 0.23.99
+%global tarball_basedir eucaconsole-4.1.1-1656-g654b391
+
 # Copyright 2012-2015 Eucalyptus Systems, Inc.
 #
 # Redistribution and use of this software in source and binary forms, with or
@@ -40,6 +55,7 @@ URL:            http://github.com/eucalyptus/koala
 Source0:        %{tarball_basedir}.tar.xz
 Source1:        %{name}.init
 Source2:        %{name}
+Source3:        nginx.sysconfig
 
 BuildArch:      noarch
 
@@ -118,6 +134,7 @@ It also works with Amazon Web Services.
 %setup -q -n %{tarball_basedir}
 cp -p %{SOURCE1} .
 cp -p %{SOURCE2} %{name}.py
+cp -p %{SOURCE3} .
 
 %build
 python2 setup.py build
@@ -146,6 +163,10 @@ install -d $RPM_BUILD_ROOT/var/run/eucaconsole
 install -d $RPM_BUILD_ROOT/var/log
 touch $RPM_BUILD_ROOT/var/log/%{name}.log
 
+# Install nginx sysconf file
+install -d $RPM_BUILD_ROOT/%_sysconfdir/sysconfig/
+install -m 644 nginx.sysconfig $RPM_BUILD_ROOT/%_sysconfdir/sysconfig/eucaconsole-nginx
+
 %find_lang %{name}
 
 
@@ -162,6 +183,7 @@ touch $RPM_BUILD_ROOT/var/log/%{name}.log
 %config(noreplace) /etc/%{name}
 %{_bindir}/%{name}
 /etc/init.d/%{name}
+/etc/sysconfig/eucaconsole-nginx
 %attr(-,eucaconsole,eucaconsole) %dir /var/run/%{name}
 %attr(-,eucaconsole,eucaconsole) /var/log/%{name}.log
 
@@ -174,25 +196,28 @@ getent passwd eucaconsole >/dev/null || \
 
 %post
 /sbin/chkconfig --add eucaconsole
-
 if [ $1 -eq 1 ] ; then
     if [ -f /etc/nginx/nginx.conf ] ; then
-	cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.orig
-	cp /usr/share/doc/%{name}-%{version}/nginx.conf /etc/nginx/nginx.conf
-	sed -i 's/#\ listen\ 443\ ssl;/listen\ 443\ ssl;/g' /etc/nginx/nginx.conf
-	sed -i 's/#\ ssl_certificate\ \/path\/to\/ssl\/pem_file;/ssl_certificate\ \/etc\/eucaconsole\/console.crt;/g' /etc/nginx/nginx.conf
-	sed -i 's/#\ ssl_certificate_key\ \/path\/to\/ssl\/certificate_key;/ssl_certificate_key\ \/etc\/eucaconsole\/console.key;/g' /etc/nginx/nginx.conf
+	#cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.orig
+	cp /usr/share/doc/%{name}-%{version}/nginx.conf /etc/eucaconsole/nginx.conf
+	sed -i 's/#\ listen\ 443\ ssl;/listen\ 443\ ssl;/g' /etc/eucaconsole/nginx.conf
+	sed -i 's/#\ ssl_certificate\ \/path\/to\/ssl\/pem_file;/ssl_certificate\ \/etc\/eucaconsole\/console.crt;/g' /etc/eucaconsole/nginx.conf
+	sed -i 's/#\ ssl_certificate_key\ \/path\/to\/ssl\/certificate_key;/ssl_certificate_key\ \/etc\/eucaconsole\/console.key;/g' /etc/eucaconsole/nginx.conf
 	sed -i 's/session.secure\ =\ false/session.secure\ =\ true/g' /etc/eucaconsole/console.ini
-	/sbin/chkconfig --add nginx
     fi 
 fi
 
 %preun
 if [ $1 -eq 0 ] ; then
+    echo "Stopping nginx..."
+    /usr/sbin/nginx -s quit
+    if [ $? -eq 0 ]; then
+        echo "Complete."
+    else
+	echo "Failed..."
+    fi
     /sbin/service eucaconsole stop >/dev/null 2>&1
     /sbin/chkconfig --del eucaconsole
-    /sbin/service nginx stop >/dev/null 2>&1
-    /sbin/chkconfig --del nginx
 fi
 
 

@@ -1,0 +1,7 @@
+NGINX_FLAGS=
+
+[ -f /etc/sysconfig/eucaconsole ] && . /etc/sysconfig/eucaconsole
+
+if [ "x$NGINX_FLAGS" != xNO ]; then
+     NGINX_CMD="/usr/sbin/nginx -c /etc/eucaconsole/nginx.conf $NGINX_FLAGS"
+fi

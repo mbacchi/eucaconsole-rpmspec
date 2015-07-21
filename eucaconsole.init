@@ -37,6 +37,9 @@
 # Description:       Eucalyptus Console Server
 ### END INIT INFO
 
+# DEBUG MBACCHI REMOVE ME!!!!!!!
+#set -x
+
 . /etc/rc.d/init.d/functions
 
 [ -f /etc/sysconfig/eucaconsole ] && . /etc/sysconfig/eucaconsole
@@ -58,9 +61,10 @@ start() {
     fi    
 
     if [ -f /etc/eucaconsole/console.crt ]; then
-        GREPCRT=$(grep -q 'ssl_certificate /etc/eucaconsole/console.crt' /etc/nginx/nginx.conf)
+        GREPCRT=$(grep -q 'ssl_certificate /etc/eucaconsole/console.crt' /etc/eucaconsole/nginx.conf)
         if [ "${GREPCRT:-0}" == 0 ]; then
-            service nginx start
+            [ -f /etc/sysconfig/eucaconsole-nginx ] && . /etc/sysconfig/eucaconsole-nginx
+            /usr/bin/nohup $NGINX_CMD &
         else
 	    echo "Warning: nginx.conf contains incorrect ssl_certificate entry; cannot start nginx webserver..."
         fi
@@ -77,6 +81,15 @@ start() {
 }
 
 stop() {
+    echo "Stopping nginx..."
+    /usr/sbin/nginx -c /etc/eucaconsole/nginx.conf -s quit
+    # if the above doesn't work try this:
+    #/bin/kill -SIGQUIT $( cat /var/run/eucaconsole/nginx.pid )
+    if [ $? -eq 0 ]; then
+        echo "Complete."
+    else
+	echo "Failed."
+    fi
     echo -n $"Stopping $SERVICE: "
     killproc -p $PIDFILE $PROCESS
     RETVAL=$?
